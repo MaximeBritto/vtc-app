@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  nom           String
+  telephone     String
+  password      String
+  isVIP         Boolean       @default(false)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  reservations  Reservation[]
+}
+
+model Reservation {
+  id               String     @id @default(cuid())
+  user             User       @relation(fields: [userId], references: [id])
+  userId           String
+  statut           String     // en_attente, confirmee, en_cours, terminee, annulee
+  dateReservation  DateTime
+  heureReservation String
+  adresseDepart    String
+  adresseArrivee   String
+  nombrePassagers  Int
+  prixEstime       Float
+  paiementStatus   String     // en_attente, paye, rembourse
+  message          String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  paiements        Paiement[]
+}
+
+model Paiement {
+  id              String      @id @default(cuid())
+  reservation     Reservation @relation(fields: [reservationId], references: [id])
+  reservationId   String
+  montant         Float
+  statut          String      // en_attente, complete, echoue, rembourse
+  dateTransaction DateTime    @default(now())
+  methodePaiement String      // carte, especes, virement
+  stripePaymentId String?     // Pour les paiements via Stripe
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+} 
